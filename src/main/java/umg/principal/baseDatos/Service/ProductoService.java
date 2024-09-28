@@ -25,12 +25,22 @@ public class ProductoService {
         return productoDAO.obtenerTodosLosProductos();
     }
 
+    public List<Producto> obtenerTodosLosProductosmenores30(String condicion) throws SQLException {
+        return productoDAO.obtenerTodosLosProductosmenores30(condicion);
+    }
 
     public void actualizarProducto(Producto producto) throws SQLException {
         productoDAO.actualizarProducto(producto);
     }
 
-    public void eliminarProducto(int id) throws SQLException {
+    public boolean eliminarProducto(int id) throws SQLException {
         productoDAO.eliminarProducto(id);
+        return true;
     }
+
+
+    public List<Producto> AgrupadosOrdenados() throws SQLException {
+        return productoDAO.AgrupadosOrdenados();
+    }
+
 }

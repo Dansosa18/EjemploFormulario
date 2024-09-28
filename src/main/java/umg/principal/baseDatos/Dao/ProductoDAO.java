@@ -31,7 +31,7 @@ public class ProductoDAO {
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                return new Producto(rs.getInt("id_producto"), rs.getString("descripcion"), rs.getString("origen"));
+                return new Producto(rs.getInt("id_producto"), rs.getString("descripcion"), rs.getString("origen"), rs.getInt("precio"), rs.getInt("existencia"));
             }
         }
         return null;
@@ -39,16 +39,52 @@ public class ProductoDAO {
 
     public List<Producto> obtenerTodosLosProductos() throws SQLException {
         List<Producto> productos = new ArrayList<>();
-        String query = "SELECT * FROM tb_producto";
+        String query = "SELECT * FROM tb_producto order by id_producto";
         try (Connection conn = conexion.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
             while (rs.next()) {
-                productos.add(new Producto(rs.getInt("id_producto"), rs.getString("descripcion"), rs.getString("origen")));
+                productos.add(new Producto(rs.getInt("id_producto"), rs.getString("descripcion"), rs.getString("origen"), rs.getInt("precio"), rs.getInt("existencia")));
             }
         }
         return productos;
     }
+
+    public List<Producto> obtenerTodosLosProductosmenores30(String condicion) throws SQLException {
+        List<Producto> productos = new ArrayList<>();
+        String query = "SELECT * FROM tb_producto where " + condicion;
+        try (Connection conn = conexion.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
+            while (rs.next()) {
+                productos.add(new Producto(rs.getInt("id_producto"), rs.getString("descripcion"), rs.getString("origen"), rs.getInt("precio"), rs.getInt("existencia")));
+            }
+        }
+        return productos;
+    }
+
+    public List<Producto> AgrupadosOrdenados() {
+        List<Producto> productos = new ArrayList<>();
+        String query = "SELECT origen, AVG(precio) as precio_promedio,SUM(existencia) AS total_existencia" + "FROM tb_producto GROUP BY origen ORDER BY promedio_precio DESC";
+
+        try (Connection conn = conexion.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
+            while (rs.next()) {
+                productos.add(new Producto(
+                        0, // Suponiendo que id no es aplicable aquí
+                        "", // Descripción no disponible en la consulta
+                        rs.getString("origen"),
+                        rs.getDouble("precio_promedio"),
+                        rs.getInt("total_existencia") // Esto debería ser una suma de existencias
+                ));            }
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return productos;
+    }
+
 
     public void actualizarProducto(Producto producto) throws SQLException {
         String query = "UPDATE tb_producto SET descripcion = ?, origen = ? WHERE id_producto = ?";
